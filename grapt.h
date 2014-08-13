@@ -19,6 +19,10 @@ typedef struct series {
   struct series *next;
 } series_t;
 
+typedef struct window {
+  double min_x, max_x, min_y, max_y;
+} window_t;
+
 void series_init(series_t *series);
 void series_destroy(series_t *series);
 void series_append(series_t *series, point_t pt);
@@ -27,13 +31,10 @@ void series_append(series_t *series, point_t pt);
  */
 int series_copy(series_t *series, series_t *to);
 void series_transform(series_t *series, point_t (*func)(point_t x));
-double series_minx(series_t *series);
-double series_miny(series_t *series);
-double series_maxx(series_t *series);
-double series_maxy(series_t *series);
+void series_window(series_t *series, window_t *window);
 void series_sort_points(series_t *series);
-
 void series_read(series_t *series, FILE *in);
 
+void data_window(series_t *series, window_t *window);
 
 #endif

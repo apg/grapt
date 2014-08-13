@@ -10,6 +10,6 @@ test: $(TESTS)
 	./run.sh
 
 clean:
-	rm $(TESTS)
+	@rm -f $(TESTS)
 
 .PHONY: test clean

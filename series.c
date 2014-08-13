@@ -97,68 +97,33 @@ series_transform(series_t *series, point_t (*funcp)(point_t x))
   }
 }
 
-double
-series_minx(series_t *series)
+void
+series_window(series_t *series, window_t *window)
 {
   double val;
   int i = 0;
-  if (series->pts_used > 0) {
-    val = series->pts[i].x;
-  }
-  for (i = 0; i < series->pts_used; i++) {
-    if (series->pts[i].x < val) {
-      val = series->pts[i].x;
-    }
-  }
-  return val;
-}
 
-double
-series_maxx(series_t *series)
-{
-  double val;
-  int i = 0;
   if (series->pts_used > 0) {
-    val = series->pts[i].x;
+    window->min_x = series->pts[0].x;
+    window->max_x = series->pts[0].x;
+    window->min_y = series->pts[0].y;
+    window->max_y = series->pts[0].y;
   }
-  for (i = 0; i < series->pts_used; i++) {
-    if ((series->pts[i].x) > val) {
-      val = series->pts[i].x;
-    }
-  }
-  return val;
-}
 
-double
-series_miny(series_t *series)
-{
-  double val;
-  int i = 0;
-  if (series->pts_used > 0) {
-    val = series->pts[i].y;
-  }
   for (i = 0; i < series->pts_used; i++) {
-    if ((series->pts[i].y) < val) {
-      val = series->pts[i].y;
+    if (series->pts[i].x < window->min_x) {
+      window->min_x = series->pts[i].x;
+    }
+    if (series->pts[i].y < window->min_y) {
+      window->min_y = series->pts[i].y;
+    }
+    if (series->pts[i].x > window->max_x) {
+      window->max_x = series->pts[i].x;
+    }
+    if (series->pts[i].y > window->max_y) {
+      window->max_y = series->pts[i].y;
     }
   }
-  return val;
-}
-
-double
-series_maxy(series_t *series)
-{
-  double val;
-  int i = 0;
-  if (series->pts_used > 0) {
-    val = series->pts[i].y;
-  }
-  for (i = 0; i < series->pts_used; i++) {
-    if (series->pts[i].y > val) {
-      val = series->pts[i].y;
-    }
-  }
-  return val;
 }
 
 
@@ -201,3 +166,26 @@ series_read(series_t *series, FILE *in)
   }
 }
 
+
+void
+data_window(series_t *series, window_t *window)
+{
+  window_t current;
+  while (series != NULL) {
+    series_window(series, &current);
+    if (current.max_x > window->max_x) {
+      window->max_x = current.max_x;
+    }
+    if (current.max_y > window->max_y) {
+      window->max_y = current.max_y;
+    }
+    if (current.min_x < window->min_x) {
+      window->min_x = current.min_x;
+    }
+    if (current.min_y < window->min_y) {
+      window->min_y = current.min_y;
+    }
+    
+    series = series->next;
+  }
+}

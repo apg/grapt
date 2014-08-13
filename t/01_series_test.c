@@ -9,6 +9,7 @@ main(int argc, char **argv)
   int n = 10000;
   series_t series;
   point_t pt;
+  window win;
   double value;
 
   series_init(&series);
@@ -27,10 +28,13 @@ main(int argc, char **argv)
 
   IS_EQ(series.pts_used, 10000, "pts_used is 10000");
   IS_GE(series.pts_alloc, 10000, "pts_alloc ge 10000");
-  IS_EQ((int)series_minx(&series), 1, "minx == 1");
-  IS_EQ((int)series_maxx(&series), 10000, "maxx == 10000");
-  IS_EQ((int)series_miny(&series), 1, "miny == 1");
-  IS_EQ((int)series_maxy(&series), 100000000, "maxy == 100000000");
+
+  series_window(&series, &win);
+
+  IS_EQ((int)win.min_x, 1, "minx == 1");
+  IS_EQ((int)win.max_x, 10000, "maxx == 10000");
+  IS_EQ((int)win.min_y, 1, "miny == 1");
+  IS_EQ((int)win.max_y, 100000000, "maxy == 100000000");
 
   return report_results(argv[0]);
 }
