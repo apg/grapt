@@ -25,7 +25,7 @@ into a place that is configured in your `$PATH`.
 
 ## Usage
 
-### Basic usage: Graph (0, 1), (0, 3), (0, 2)
+### Basic usage: Graph (0, 1), (1, 3), (2, 2)
 
 ```bash
 $ grapt
