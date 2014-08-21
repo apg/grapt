@@ -25,6 +25,8 @@
 #define MIN(x, y) (x > y ? y: x)
 #define MAX(x, y) (x > y ? x: y)
 
+extern int config_tee;
+
 static void
 alloc_pts(series_t *series, size_t count)
 {
@@ -94,12 +96,12 @@ series_copy(series_t *series, series_t *to)
   to->pts_alloc = series->pts_alloc;
   to->pts_used = series->pts_used;
   to->next = NULL;
-  
+
   to->pts = malloc(sizeof(*to->pts) * to->pts_alloc);
   if (to->pts == NULL) {
     return -1;
   }
-  
+
   bcopy(series->pts, to->pts, sizeof(*to->pts) * to->pts_alloc);
   return 0;
 }
@@ -152,7 +154,7 @@ series_read(series_t *series, FILE *in)
   int x = 0;
   int count, required = -1;
   double left, right;
-  
+
 
   fgets(buf, 1024, in);
   while (!feof(in)) {
@@ -179,6 +181,11 @@ series_read(series_t *series, FILE *in)
     }
 
     series_append(series, pt);
+
+    if (config_tee) {
+      fputs(buf, stdout);
+    }
+
     fgets(buf, 1024, in);
   }
 }
@@ -202,7 +209,7 @@ data_window(series_t *series, window_t *window)
     if (current.min_y < window->min_y) {
       window->min_y = current.min_y;
     }
-    
+
     series = series->next;
   }
 }

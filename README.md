@@ -25,6 +25,20 @@ into a place that is configured in your `$PATH`.
 
 ## Usage
 
+```bash
+$ grapt -h
+usage: grapt [options]
+
+    -H, --height        Height of canvas
+    -w, --width         Width of canvas
+    -o, --output        Output filename (defaults output.png)
+    -h, --help          This message
+    -t, --tee           Tee input to stdout
+    -v, --version       Version information
+```
+
+## Examples
+
 ### Basic usage: Graph (0, 1), (0, 3), (0, 2)
 
 ```bash

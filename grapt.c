@@ -27,14 +27,15 @@
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
 #define DEFAULT_OUTPUT_FILE "output.png"
-#define DEFAULT_PADDING 5
+#define DEFAULT_PADDING 10
 
-#define VERSION "0.1.1"
+#define VERSION "0.1.2"
 
 char *config_output_file = DEFAULT_OUTPUT_FILE;
 int config_width = DEFAULT_WIDTH;
 int config_height = DEFAULT_HEIGHT;
 int config_padding = DEFAULT_PADDING;
+int config_tee = 0;
 
 static void
 draw_series(series_t *series)
@@ -86,12 +87,13 @@ draw_series(series_t *series)
 }
 
 
-static char *options = "H:w:o:hv";
+static char *options = "H:w:o:htv";
 static struct option long_options[] = {
   {"height", required_argument,0, 'H' },
   {"width", required_argument, 0, 'w' },
   {"output", required_argument, 0, 'o' },
   {"help", no_argument, 0, 'h' },
+  {"tee", no_argument, 0, 't' },
   {"version", no_argument, 0, 'v' },
   {0, 0, 0, 0 }
 };
@@ -104,6 +106,7 @@ usage(char *arg0)
           "    -w, --width         Width of canvas\n"
           "    -o, --output        Output filename (defaults output.png)\n"
           "    -h, --help          This message\n"
+          "    -t, --tee           Tee input to stdout\n"
           "    -v, --version       Version information\n",
           arg0);
 }
@@ -153,6 +156,9 @@ optparse(int argc, char *argv[])
         fprintf(stderr, "invalid output file\n");
         exit(EXIT_FAILURE);
       }
+      break;
+    case 't':
+      config_tee = 1;
       break;
     case 'v':
       fprintf(stderr, "%s version %s\n", argv[0], VERSION);
