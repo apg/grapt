@@ -27,18 +27,20 @@
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
 #define DEFAULT_OUTPUT_FILE "output.png"
+#define DEFAULT_PADDING 5
 
 #define VERSION "0.1.1"
 
 char *config_output_file = DEFAULT_OUTPUT_FILE;
 int config_width = DEFAULT_WIDTH;
 int config_height = DEFAULT_HEIGHT;
+int config_padding = DEFAULT_PADDING;
 
 static void
 draw_series(series_t *series)
 {
   int i;
-  double spanx, spany, stepx, stepy;
+  double spanx, spany, stepx, stepy, thisx, thisy;
   window_t window;
 
   cairo_surface_t *surface =
@@ -59,18 +61,20 @@ draw_series(series_t *series)
   spanx = window.max_x - window.min_x;
   spany = window.max_y - window.min_y;
 
-  stepx = config_width / spanx;
-  stepy = config_height / spany;
+  stepx = (config_width - (2 * config_padding)) / spanx;
+  stepy = (config_height - (2 * config_padding)) / spany;
 
   if (series->pts_used > 0) {
-    cairo_move_to(cr, (series->pts[0].x - window.min_x) * stepx,
-                  config_height - ((series->pts[0].y - window.min_y) * stepy));
+    thisx = (series->pts[0].x - window.min_x) * stepx;
+    thisy = config_height - ((series->pts[0].y - window.min_y) * stepy);
+
+    cairo_move_to(cr, thisx + config_padding, thisy - config_padding);
 
     /* draw the series */
     for (i = 1; i < series->pts_used; i++) {
-      cairo_line_to(cr, (series->pts[i].x - window.min_x) * stepx,
-                    config_height - \
-                    ((series->pts[i].y - window.min_y) * stepy));
+      thisx = (series->pts[i].x - window.min_x) * stepx;
+      thisy = config_height - ((series->pts[i].y - window.min_y) * stepy);
+      cairo_line_to(cr, thisx + config_padding, thisy - config_padding);
     }
 
     cairo_stroke(cr);
