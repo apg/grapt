@@ -52,24 +52,30 @@ $ grapt
 This should produce a PNG file called output.png, which gives you a basic
 2 line segment plot.
 
+![Basic Example](https://raw.githubusercontent.com/apg/grapt/master/examples/basic-usage.png)
+
 ### Advanced usage: IOPS for 30 seconds on sda
 
 ```bash
 $ iostat 1 30 | grep 'sda' | awk '{print $2}' | grapt -o iops.png
 ```
 
-Full usage information:
+![30 Second IOPS](https://raw.githubusercontent.com/apg/grapt/master/examples/iops.png)
+
+### Advanced usage: token / word distribution in the grapt source code.
 
 ```bash
-$ grapt -h
-usage: grapt [options]
-
-    -H, --height        Height of canvas
-    -w, --width         Width of canvas
-    -o, --output        Output filename (defaults output.png)
-    -h, --help          This message
-    -v, --version       Version information
+for n in `cat *.[ch] | sed -e 's/[^0-9a-zA-Z_]/ /g'`; do 
+   echo $n; 
+done | sort | uniq -c | sort -n | awk '{print $1}' \
+| grapt -w 320 -H 240 -o word-dist.png
 ```
+
+This gives you the word distribution from the source code, which at
+the time of this writing was:
+
+![Source code word distribution](https://raw.githubusercontent.com/apg/grapt/master/examples/word-dist.png)
+
 
 ## Contributing and Feedback
 
