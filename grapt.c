@@ -18,6 +18,7 @@
 #include <cairo/cairo.h>
 #include <getopt.h>
 #include <errno.h>
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,6 +37,43 @@ int config_width = DEFAULT_WIDTH;
 int config_height = DEFAULT_HEIGHT;
 int config_padding = DEFAULT_PADDING;
 int config_tee = 0;
+
+
+/**
+ * Non-destructively assigns *val to the integer in str iff str is a
+ * valid, positive integer that is less than INT_MAX
+ *
+ * returns -1 on failure
+ */
+static int
+strtopint(char *str, int *val)
+{
+  long tmp;
+  char *endptr;
+
+  if (str != NULL) {
+    tmp = strtol(str, &endptr, 10);
+    if (tmp > 0 && errno == 0 && str != endptr) {
+      if (tmp <= INT_MAX) {
+        *val = (int) tmp;
+        return 1;
+      }
+    }
+  }
+
+  return -1;
+}
+
+
+static int
+getenvint(char *var, int *ret)
+{
+  char *endptr;
+  char *val = getenv(var);
+
+  return strtopint(val, ret);
+}
+
 
 static void
 draw_series(series_t *series)
@@ -116,6 +154,10 @@ optparse(int argc, char *argv[])
 {
   char *endptr;
   int c;
+
+  getenvint("GRAPT_WIDTH", &config_width);
+  getenvint("GRAPT_HEIGHT", &config_height);
+
   for (;;) {
     c = getopt_long(argc, argv, options,
                     long_options, NULL);
@@ -125,33 +167,21 @@ optparse(int argc, char *argv[])
 
     switch (c) {
     case 'H':
-      config_height = (int)strtol(optarg, &endptr, 10);
-      if (config_height <= 0 || errno == ERANGE || errno != 0) {
-        fprintf(stderr, "invalid height\n\n");
-        perror("strtol");
-        exit(EXIT_FAILURE);
-      }
-      else if (optarg == endptr) {
-        fprintf(stderr, "no digits found for height\n\n");
+      if (strtopint(optarg, &config_height) < 0) {
+        fprintf(stderr, "ERROR: invalid width\n\n");
         exit(EXIT_FAILURE);
       }
       break;
     case 'w':
-      config_width = (int)strtol(optarg, &endptr, 10);
-      if (config_width <= 0 || errno == ERANGE || errno != 0) {
-        fprintf(stderr, "invalid width\n\n");
-        perror("strtol");
-        exit(EXIT_FAILURE);
-      }
-      else if (optarg == endptr) {
-        fprintf(stderr, "no digits found for width\n\n");
+      if (strtopint(optarg, &config_width) < 0) {
+        fprintf(stderr, "ERROR: invalid width\n\n");
         exit(EXIT_FAILURE);
       }
       break;
     case 'o':
       if (strlen(optarg) > 0) {
         config_output_file = optarg;
-      } 
+      }
       else {
         fprintf(stderr, "invalid output file\n");
         exit(EXIT_FAILURE);
