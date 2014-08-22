@@ -51,6 +51,7 @@ void series_transform(series_t *series, point_t (*func)(point_t x));
 void series_window(series_t *series, window_t *window);
 void series_sort_points(series_t *series);
 void series_read(series_t *series, FILE *in);
+void series_smooth(series_t *series, series_t *result, int window);
 
 void data_window(series_t *series, window_t *window);
 
