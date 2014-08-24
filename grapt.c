@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "grapt.h"
 
@@ -37,6 +38,7 @@ int config_width = DEFAULT_WIDTH;
 int config_height = DEFAULT_HEIGHT;
 int config_padding = DEFAULT_PADDING;
 int config_tee = 0;
+double log_base = 0;
 
 
 /**
@@ -125,12 +127,13 @@ draw_series(series_t *series)
 }
 
 
-static char *options = "H:w:o:htv";
+static char *options = "H:w:o:hl:tv";
 static struct option long_options[] = {
-  {"height", required_argument,0, 'H' },
+  {"height", required_argument, 0, 'H' },
   {"width", required_argument, 0, 'w' },
   {"output", required_argument, 0, 'o' },
   {"help", no_argument, 0, 'h' },
+  {"log", required_argument, 0, 'l' },
   {"tee", no_argument, 0, 't' },
   {"version", no_argument, 0, 'v' },
   {0, 0, 0, 0 }
@@ -144,6 +147,7 @@ usage(char *arg0)
           "    -w, --width         Width of canvas\n"
           "    -o, --output        Output filename (defaults output.png)\n"
           "    -h, --help          This message\n"
+          "    -l, --log           Log-Y scale (w/ base, or 'e')\n"
           "    -t, --tee           Tee input to stdout\n"
           "    -v, --version       Version information\n",
           arg0);
@@ -187,6 +191,18 @@ optparse(int argc, char *argv[])
         exit(EXIT_FAILURE);
       }
       break;
+    case 'l':
+      if (optarg) {
+        log_base = strtod(optarg, NULL);
+        if (log_base == 0 && optarg[0] == 'e') {
+          log_base = M_E;
+        }
+      }
+      if (log_base == 1 || log_base <= 0) {
+        fprintf(stderr, "ERROR: bad log base\n\n");
+        exit(EXIT_FAILURE);
+      }
+      break;
     case 't':
       config_tee = 1;
       break;
@@ -199,10 +215,29 @@ optparse(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
   }
+  return 0;
+}
+
+static void log_scale_point(point_t *p, void *udata)
+{
+  double *lb = (double *)udata;
+  if (*lb == M_E) {
+    p->y = log(p->y);
+  } else {
+    p->y = log(p->y) / log(*lb);
+  }
+}
+
+static void
+do_scaling(series_t *series)
+{
+  if (log_base != 0) {
+    series_scale(series, log_scale_point, (void *)&log_base);
+  }
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
   int i;
   series_t series;
@@ -211,6 +246,7 @@ main (int argc, char *argv[])
 
   series_init(&series);
   series_read(&series, stdin);
+  do_scaling(&series);
   draw_series(&series);
 
   return 0;

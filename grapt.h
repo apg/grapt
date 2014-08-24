@@ -52,6 +52,17 @@ void series_window(series_t *series, window_t *window);
 void series_sort_points(series_t *series);
 void series_read(series_t *series, FILE *in);
 
+/**
+ * Function used to scale the points in every series.
+ */
+typedef void (series_scale_fun)(point_t *pt, void *udata);
+
+/**
+ * Scale each series of points by an arbitrary function.
+ * UDATA is an environment with extra info for the function.
+ */
+int series_scale(series_t *series, series_scale_fun *f, void *udata);
+
 void data_window(series_t *series, window_t *window);
 
 #endif
