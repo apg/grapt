@@ -218,21 +218,24 @@ optparse(int argc, char *argv[])
   return 0;
 }
 
-static void log_scale_point(point_t *p, void *udata)
+static point_t log_scale_point(point_t p)
 {
-  double *lb = (double *)udata;
-  if (*lb == M_E) {
-    p->y = log(p->y);
+  point_t res;
+  res.x = p.x;
+  if (log_base == M_E) {
+    res.y = log(p.y);
   } else {
-    p->y = log(p->y) / log(*lb);
+    res.y = log(p.y) / log(log_base);
   }
+  
+  return res;
 }
 
 static void
 do_scaling(series_t *series)
 {
   if (log_base != 0) {
-    series_scale(series, log_scale_point, (void *)&log_base);
+    series_transform(series, log_scale_point);
   }
 }
 
