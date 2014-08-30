@@ -110,11 +110,17 @@ series_copy(series_t *series, series_t *to)
 void
 series_transform(series_t *series, point_t (*funcp)(point_t x))
 {
-  int i;
-  for (i = 0; i < series->pts_used; i++) {
-    series->pts[i] = (*funcp)(series->pts[i]);
+  if (funcp == NULL) {
+      return;  // no-op
+  }
+
+  for (series_t *s = series; s; s = s->next) {
+    for (int i = 0; i < s->pts_used; i++) {
+      series->pts[i] = (*funcp)(series->pts[i]);
+    }
   }
 }
+
 
 void
 series_window(series_t *series, window_t *window)
