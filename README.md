@@ -31,8 +31,9 @@ usage: ./grapt [options]
 
   -H, --height=HEIGHT   Height of canvas
   -w, --width=WIDTH     Width of canvas
-  -o, --output=FILENAME Output filename (defaults output.png)
   -h, --help            This message
+  -l, --log=BASE        Log-Y scale (w/ base, or 'e')
+  -o, --output=FILENAME Output filename (defaults output.png)
   -s, --smooth=WINDOW   Smoothing window
   -t, --tee             Tee input to stdout
   -v, --version         Version information
@@ -102,6 +103,7 @@ more work to be done.
 ## Authors
 
 Andrew Gwozdziewycz <web@apgwoz.com>
+Scott Vokes <vokes.s@gmail.com>
 
 ## Copyright
 

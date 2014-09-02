@@ -31,7 +31,7 @@
 #define DEFAULT_OUTPUT_FILE "output.png"
 #define DEFAULT_PADDING 10
 
-#define VERSION "0.1.2"
+#define VERSION "0.2.0"
 
 char *config_output_file = DEFAULT_OUTPUT_FILE;
 int config_width = DEFAULT_WIDTH;
