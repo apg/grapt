@@ -102,8 +102,8 @@ more work to be done.
 
 ## Authors
 
-Andrew Gwozdziewycz <web@apgwoz.com>
-Scott Vokes <vokes.s@gmail.com>
+* Andrew Gwozdziewycz <web@apgwoz.com>
+* Scott Vokes <vokes.s@gmail.com>
 
 ## Copyright
 
