@@ -27,14 +27,15 @@ into a place that is configured in your `$PATH`.
 
 ```bash
 $ grapt -h
-usage: grapt [options]
+usage: ./grapt [options]
 
-    -H, --height        Height of canvas
-    -w, --width         Width of canvas
-    -o, --output        Output filename (defaults output.png)
-    -h, --help          This message
-    -t, --tee           Tee input to stdout
-    -v, --version       Version information
+  -H, --height=HEIGHT   Height of canvas
+  -w, --width=WIDTH     Width of canvas
+  -o, --output=FILENAME Output filename (defaults output.png)
+  -h, --help            This message
+  -s, --smooth=WINDOW   Smoothing window
+  -t, --tee             Tee input to stdout
+  -v, --version         Version information
 ```
 
 ## Examples
@@ -76,6 +77,21 @@ the time of this writing was:
 
 ![Source code word distribution](https://raw.githubusercontent.com/apg/grapt/master/examples/word-dist.png)
 
+### Advanced usage: Distribution of random numbers with smoothing
+
+```bash
+for n in {0..10000}; do 
+   echo $(( $RANDOM % 100 )); 
+done | sort -n | uniq -c | awk '{print $1}' \
+| ./grapt -w 320 -H 240 -o random.png -s 21
+```
+
+This gives us 2 series on the plot. The first, in bright red, shows
+the distribution of random numbers. The second one, in maroon, shows
+us a smoothed version of the red series, using a simple moving average
+smoothing algorithm, with a window size of 21. 
+
+![Random Number Distribution](https://raw.githubusercontent.com/apg/grapt/mean-smoother/examples/random-dist-smoothed.png)
 
 ## Contributing and Feedback
 

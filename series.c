@@ -72,6 +72,8 @@ series_destroy(series_t *series)
   }
   else {
     free(series->pts);
+    /* TODO: is this wrong?  main right now allocates a 
+     * series on the stack, which means we can't call destroy. */
     free(series);
   }
 }
@@ -195,6 +197,37 @@ series_read(series_t *series, FILE *in)
     }
 
     fgets(buf, 1024, in);
+  }
+}
+
+
+void
+series_smooth(series_t *series, series_t *res, int window)
+{
+  point_t tmp;
+  double sum;
+  int i, j;
+
+  series_init(res);
+
+  if (window < 0) {
+    return;
+  } 
+  else if (window % 2 == 0) { // need a odd number for mean smoothing
+    window += 1;
+  }
+
+  for (i = 0; i < series->pts_used; i++) {
+    if (i > (window / 2) && i < (series->pts_used - (window / 2))) {
+      sum = 0.0;
+      for (j = i - (window / 2); j < i + (window / 2); j++) {
+        sum += series->pts[j].y;
+      }
+      tmp.x = series->pts[i].x;
+      tmp.y = sum / window;
+
+      series_append(res, tmp);
+    }
   }
 }
 

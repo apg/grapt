@@ -36,6 +36,7 @@
 char *config_output_file = DEFAULT_OUTPUT_FILE;
 int config_width = DEFAULT_WIDTH;
 int config_height = DEFAULT_HEIGHT;
+int config_smooth = 0;
 int config_padding = DEFAULT_PADDING;
 int config_tee = 0;
 double log_base = 0;
@@ -80,9 +81,10 @@ getenvint(char *var, int *ret)
 static void
 draw_series(series_t *series)
 {
-  int i;
+  int i, c;
   double spanx, spany, stepx, stepy, thisx, thisy;
   window_t window;
+  series_t *cursor = series;
 
   cairo_surface_t *surface =
     cairo_image_surface_create(CAIRO_FORMAT_ARGB32, \
@@ -95,7 +97,7 @@ draw_series(series_t *series)
   cairo_fill(cr);
 
   cairo_set_line_width(cr, 1.0);
-  cairo_set_source_rgb(cr, 1.0, 0.0f, 0.0f);
+  cairo_set_source_rgb(cr, 1.0f, 0.0f, 0.0f);
 
   data_window(series, &window);
 
@@ -105,20 +107,26 @@ draw_series(series_t *series)
   stepx = (config_width - (2 * config_padding)) / spanx;
   stepy = (config_height - (2 * config_padding)) / spany;
 
-  if (series->pts_used > 0) {
-    thisx = (series->pts[0].x - window.min_x) * stepx;
-    thisy = config_height - ((series->pts[0].y - window.min_y) * stepy);
+  c = 0;
+  while (cursor != NULL) {
+    cairo_set_source_rgb(cr, 1.0f / (1.0 + c), 0.0f, 0.0f);
+    if (cursor->pts_used > 0) {
+      thisx = (cursor->pts[0].x - window.min_x) * stepx;
+      thisy = config_height - ((cursor->pts[0].y - window.min_y) * stepy);
 
-    cairo_move_to(cr, thisx + config_padding, thisy - config_padding);
+      cairo_move_to(cr, thisx + config_padding, thisy - config_padding);
 
-    /* draw the series */
-    for (i = 1; i < series->pts_used; i++) {
-      thisx = (series->pts[i].x - window.min_x) * stepx;
-      thisy = config_height - ((series->pts[i].y - window.min_y) * stepy);
-      cairo_line_to(cr, thisx + config_padding, thisy - config_padding);
+      /* draw the series */
+      for (i = 1; i < cursor->pts_used; i++) {
+        thisx = (cursor->pts[i].x - window.min_x) * stepx;
+        thisy = config_height - ((cursor->pts[i].y - window.min_y) * stepy);
+        cairo_line_to(cr, thisx + config_padding, thisy - config_padding);
+      }
+
+      cairo_stroke(cr);
     }
-
-    cairo_stroke(cr);
+    cursor = cursor->next;
+    c++;
   }
 
   cairo_destroy(cr);
@@ -127,13 +135,14 @@ draw_series(series_t *series)
 }
 
 
-static char *options = "H:w:o:hl:tv";
+static char *options = "H:w:o:l:s:htv";
 static struct option long_options[] = {
   {"height", required_argument, 0, 'H' },
   {"width", required_argument, 0, 'w' },
   {"output", required_argument, 0, 'o' },
-  {"help", no_argument, 0, 'h' },
+  {"smooth", required_argument, 0, 's' },
   {"log", required_argument, 0, 'l' },
+  {"help", no_argument, 0, 'h' },
   {"tee", no_argument, 0, 't' },
   {"version", no_argument, 0, 'v' },
   {0, 0, 0, 0 }
@@ -143,13 +152,14 @@ static void
 usage(char *arg0)
 {
   fprintf(stderr, "usage: %s [options]\n\n"
-          "    -H, --height        Height of canvas\n"
-          "    -w, --width         Width of canvas\n"
-          "    -o, --output        Output filename (defaults output.png)\n"
-          "    -h, --help          This message\n"
-          "    -l, --log           Log-Y scale (w/ base, or 'e')\n"
-          "    -t, --tee           Tee input to stdout\n"
-          "    -v, --version       Version information\n",
+          "  -H, --height=HEIGHT   Height of canvas\n"
+          "  -w, --width=WIDTH     Width of canvas\n"
+          "  -h, --help            This message\n"
+          "  -l, --log             Log-Y scale (w/ base, or 'e')\n"
+          "  -o, --output=FILENAME Output filename (defaults output.png)\n"
+          "  -s, --smooth=WINDOW   Smoothing window\n"
+          "  -t, --tee             Tee input to stdout\n"
+          "  -v, --version         Version information\n",
           arg0);
 }
 
@@ -200,6 +210,11 @@ optparse(int argc, char *argv[])
       }
       if (log_base == 1 || log_base <= 0) {
         fprintf(stderr, "ERROR: bad log base\n\n");
+      }
+      break;
+    case 's':
+      if (strtopint(optarg, &config_smooth) < 0) {
+        fprintf(stderr, "ERROR: invalid smoothing window\n\n");
         exit(EXIT_FAILURE);
       }
       break;
@@ -218,7 +233,8 @@ optparse(int argc, char *argv[])
   return 0;
 }
 
-static point_t log_scale_point(point_t p)
+static point_t 
+log_scale_point(point_t p)
 {
   point_t res;
   res.x = p.x;
@@ -243,13 +259,19 @@ int
 main(int argc, char *argv[])
 {
   int i;
-  series_t series;
+  series_t series, smoothed;
 
   optparse(argc, argv);
 
   series_init(&series);
   series_read(&series, stdin);
   do_scaling(&series);
+
+  if (config_smooth) {
+    series_smooth(&series, &smoothed, config_smooth);
+    series.next = &smoothed;
+  }
+
   draw_series(&series);
 
   return 0;
