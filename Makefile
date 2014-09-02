@@ -1,5 +1,5 @@
 LIBOBJS = series.o
-LDFLAGS = -lcairo
+LDFLAGS = -lcairo -lm
 
 grapt: $(LIBOBJS) grapt.o
 
