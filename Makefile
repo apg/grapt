@@ -1,7 +1,7 @@
 LIBOBJS = series.o
-LDFLAGS = -lcairo -lm
 
 grapt: $(LIBOBJS) grapt.o
+	$(CC) -o $@ $^ -lm `pkg-config --cflags --libs cairo cairo-png`
 
 libgrapt.a: $(LIBOBJS)
 	$(AR) rcs $@ $^
